@@ -35,6 +35,7 @@ jobs:
         uses: actions-mn/build-and-publish@v2
         with:
           agree-to-terms: true
+          destination: gh-pages
 
   deploy:
     if: ${{ github.ref == 'refs/heads/main' }}
