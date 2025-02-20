@@ -43,8 +43,8 @@ other type of managed content that requires versioning and governance.
 [bibliography]
 == Normative references
 
-* [[[iso_19135-2025,ISO/DIS 19135]]]
-* [[[yaml_1_2,YAML 1.2]]], YAML Ain't Markup Language (https://yaml.org/spec/1.2/spec.html)
+// * [[[iso_19135-2025,ISO/DIS 19135]]]
+// * [[[yaml_1_2,YAML 1.2]]], YAML Ain't Markup Language (https://yaml.org/spec/1.2/spec.html)
 
 == Terms and definitions
 
@@ -52,38 +52,38 @@ other type of managed content that requires versioning and governance.
 
 managed collection of information
 
-[.source]
-<<iso_19135-2025,clause=3.24>>
+// [.source]
+// <<iso_19135-2025,clause=3.24>>
 
 === register item
 
 unit of information in a {{register}} with an {{identifier}}
 
-[.source]
-<<iso_19135-2025,clause=3.25>>
+// [.source]
+// <<iso_19135-2025,clause=3.25>>
 
 === concept
 
 unit of knowledge created by a unique combination of characteristics
 
-[.source]
-<<iso_19135-2025,clause=3.8>>
+// [.source]
+// <<iso_19135-2025,clause=3.8>>
 
 === concept class
 
 {{concept}} that corresponds to a potentially unlimited number of objects which
 form a group by reason of shared properties
 
-[.source]
-<<iso_19135-2025,clause=3.9>>
+// [.source]
+// <<iso_19135-2025,clause=3.9>>
 
 === register item class
 
 defined abstraction of a set of {{register item,register items}} that share
 common characteristics
 
-[.source]
-<<iso_19135-2025,clause=3.26>>
+// [.source]
+// <<iso_19135-2025,clause=3.26>>
 
 === CLI prompt mode
 
@@ -174,7 +174,7 @@ instance of a concept with specific values for its attributes.
 ====
 [source,lutaml]
 ----
-instance Meter { 
+instance Meter {
   id = "UOM-0001"
   name = "Meter"
 }
@@ -219,15 +219,15 @@ class UnitOfMeasureVersion {
     definition "Version identifier of the unit of measure"
     pattern /^\d+\.\d+$/
   }
-  
+
   attribute name, String {
     definition "Name of the unit of measure"
   }
-  
+
   attribute symbol, String {
     definition "Symbol for the unit of measure"
   }
-  
+
   attribute quantity, String {
     definition "Physical quantity measured by the unit"
   }
@@ -235,16 +235,16 @@ class UnitOfMeasureVersion {
   attribute publication_date, Date {
     definition "Date of publication for this version"
   }
-  
+
   attribute format_locations, Hash {
     definition "Map of format types to their storage locations in the register"
   }
-  
+
   attribute status, String {
     definition "Status of this unit of measure version"
     values { "draft", "published", "retired" }
   }
-  
+
   attribute concept_identifier, String {
     definition "Reference to the unit of measure concept this item represents"
   }
@@ -313,7 +313,7 @@ the register.
 === General
 
 The Paneron Registry CLI implements the register management capabilities
-defined in ISO 19135:2025. 
+defined in ISO 19135:2025.
 
 It provides a command-line interface that allows users to create and manage
 registers through both direct commands and an interactive prompt mode.
@@ -344,7 +344,7 @@ The data model of a register managed by this tool consists of:
 * Register item instances
 
 All these components are stored in plain text files using the LutaML format
-or other formats supported by LutaML Model. 
+or other formats supported by LutaML Model.
 
 ==== Storage structure
 
@@ -379,23 +379,23 @@ class RegisterMetadata {
   attribute register_identifier, String {
     definition "Unique identifier for the register"
   }
-  
+
   attribute name, String {
     definition "Human-readable name of the register"
   }
-  
+
   attribute owner, String {
     definition "Organization or entity that owns the register"
   }
-  
+
   attribute manager, String {
     definition "Entity responsible for managing the register"
   }
-  
+
   attribute creation_date, Date {
     definition "Date when the register was created"
   }
-  
+
   attribute last_modified, Date {
     definition "Date when the register was last modified"
   }
@@ -410,23 +410,23 @@ Here is an example of a Document concept class and its associated register item 
 ----
 class DocumentConcept {
   definition {
-    A document concept represents a unique intellectual work that may have multiple 
+    A document concept represents a unique intellectual work that may have multiple
     manifestations over time
   }
 
   attribute title, String {
     definition "Title of the document"
   }
-  
+
   attribute authors, String {
     definition "Authors of the document"
     cardinality 1..*
   }
-  
+
   attribute abstract, String {
     definition "Abstract or summary of the document"
   }
-  
+
   attribute keywords, String {
     definition "Keywords associated with the document"
     cardinality 0..*
@@ -441,20 +441,20 @@ class DocumentRegisterItem {
   attribute version, String {
     definition "Version identifier of the document"
   }
-  
+
   attribute publication_date, Date {
     definition "Date of publication for this version"
   }
-  
+
   attribute format_locations, Hash {
     definition "Map of format types to their storage locations in the register"
   }
-  
+
   attribute status, String {
     definition "Status of this document version"
     values { "draft", "published", "retired" }
   }
-  
+
   attribute concept_identifier, String {
     definition "Reference to the document concept this item represents"
   }
@@ -515,7 +515,7 @@ class UnitOfMeasure {
 ──────────────────────────────────────────────────────────
 
 myregister> show concepts UnitOfMeasure -table
-myregister> show register-item-classes -table 
+myregister> show register-item-classes -table
 ╔══════════════════════╦═══════════════════════════════════════════════════╗
 ║ Register Item Class  ║              Description                          ║
 ╚══════════════════════╩═══════════════════════════════════════════════════╝
@@ -1240,15 +1240,15 @@ instances VersionRelationships {
 //   attribute schema_id, String {
 //     pattern /^SCH-\d{4}$/
 //   }
-  
+
 //   attribute concept_class, String
 //   attribute version, String {
 //     pattern /^\d+\.\d+\.\d+$/
 //   }
-  
+
 //   attribute valid_from, Date
 //   attribute valid_until, Date
-  
+
 //   attribute migration_rules, Hash {
 //     definition "Rules for migrating from previous version"
 //   }
@@ -1269,7 +1269,7 @@ instances VersionRelationships {
 //       "custom"
 //     }
 //   }
-  
+
 //   attribute rule_definition, String
 //   attribute error_message, String
 // }
@@ -1302,7 +1302,7 @@ instances VersionRelationships {
 //     rule_definition = "/^[a-z]{2}(-[A-Z]{2})?$/"
 //     error_message = "Language code must be in format 'xx' or 'xx-XX'"
 //   }
-  
+
 //   instance ValidationRule {
 //     attribute_name = "authors"
 //     rule_type = "required"
@@ -1320,11 +1320,11 @@ instances VersionRelationships {
 //   attribute migration_id, String {
 //     pattern /^MIG-\d{6}$/
 //   }
-  
+
 //   attribute source_schema, String
 //   attribute target_schema, String
 //   attribute concept_id, String
-  
+
 //   attribute status, String {
 //     values {
 //       "pending",
@@ -1333,7 +1333,7 @@ instances VersionRelationships {
 //       "failed"
 //     }
 //   }
-  
+
 //   attribute changes_applied, Hash
 //   attribute validation_errors, String[]
 //   attribute completion_date, Date
@@ -1538,23 +1538,23 @@ class MuseumRegisterMetadata {
     definition "Unique identifier for the register"
     pattern /^MUS-[A-Z]{3}$/
   }
-  
+
   attribute name, String {
     definition "Human-readable name of the register"
   }
-  
+
   attribute institution, String {
     definition "Museum or institution managing the register"
   }
-  
+
   attribute department, String {
     definition "Department responsible for the collection"
   }
-  
+
   attribute creation_date, Date {
     definition "Date when the register was created"
   }
-  
+
   attribute last_modified, Date {
     definition "Date when the register was last modified"
   }
@@ -1565,24 +1565,24 @@ class ValueAssessment {
   definition {
     Assessment of artifact monetary and cultural value
   }
-  
+
   attribute artifact_ref, String {
     definition "Reference to the artifact"
   }
-  
+
   attribute monetary_value, Float {
     definition "Assessed monetary value in base currency"
   }
-  
+
   attribute cultural_significance, String {
     definition "Level of cultural significance"
     values { "exceptional", "high", "moderate", "low" }
   }
-  
+
   attribute assessment_date, Date {
     definition "Date of value assessment"
   }
-  
+
   attribute assessor, String {
     definition "Person conducting the assessment"
   }
