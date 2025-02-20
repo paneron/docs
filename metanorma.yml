@@ -1,0 +1,9 @@
+---
+metanorma:
+  source:
+    files:
+      - sources/paneron-cli.adoc
+      
+  collection:
+    organization: "Paneron"
+    name: "Paneron specifications"

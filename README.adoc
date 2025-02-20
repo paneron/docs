@@ -1,0 +1,65 @@
+= Paneron Specifications
+
+image:https://github.com/paneron/docs/workflows/generate/badge.svg["Build Status", link="https://github.com/paneron/docs/actions?query=workflow%3Agenerate"]
+
+This document is available in its rendered forms here:
+
+* https://paneron.github.io/docs/[Paneron Specifications]
+
+== Introduction
+
+This repository contains the official specifications for the Paneron framework, a comprehensive suite of tools for model-driven development. The specifications include:
+
+RS 5002:: *Paneron CLI* -- Command-line interface for Paneron
+
+These specifications are written in Metanorma to generate standardized documentation in multiple formats.
+
+== Structure
+
+`sources/`:: source files for Paneron specifications in Metanorma format.
+
+`paneron-cli.adoc`::: Paneron CLI specification
+
+`metanorma.yml`::: Configuration file for Metanorma build process
+
+`_site/`::
+Generated documentation in multiple formats (HTML, PDF, XML, etc.)
+
+== Building documentation
+
+This repository uses Metanorma to build standardized documentation.
+
+=== Installing build tools
+
+See https://www.metanorma.org/install/ for detailed installation instructions.
+
+=== Building locally
+
+If you have Metanorma installed locally, run:
+
+[source,sh]
+----
+metanorma site generate
+----
+
+=== Building with Docker
+
+If you prefer using Docker, run:
+
+[source,sh]
+----
+docker run -v "$(pwd)":/metanorma -w /metanorma -it metanorma/mn metanorma site generate
+----
+
+== Generated Formats
+
+The build process generates documentation in multiple formats:
+
+* HTML -- Web-friendly format with navigation
+* PDF -- Print-ready format
+* XML -- Machine-readable format
+* RXL -- Relaton XML bibliographic format
+
+== License
+
+Copyright Ribose.

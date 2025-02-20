@@ -1,0 +1,1623 @@
+= Paneron -- Register CLI
+:edition: 1.0
+:doctype: standard
+:docnumber: RS 5002
+:published-date: 2025-02-20
+:status: published
+:security: unrestricted
+:committee: Paneron
+:committee-type: technical
+:imagesdir: images
+:mn-document-class: ribose
+:mn-output-extensions: xml,html,pdf,rxl
+:fullname: Ronald Tse
+:surname: Tse
+:givenname: Ronald
+:affiliation: Ribose
+:local-cache-only:
+:data-uri-image:
+:publisher: Ribose Inc.
+:pub-address: 167-169 Great Portland Street + \
+5th Floor + \
+London + \
+W1W 5PF + \
+United Kingdom
+
+
+== Scope
+
+This document specifies the implementation details of a command-line tool called
+"paneron" that enables the creation and management of registers conforming to
+ISO 19135:2025. The tool provides a command-line interface that allows users to:
+
+* Create and manage registers containing concept classes and register item classes
+* Define and manage register item instances that represent versions of concepts
+* Define and manage concept instances
+* Perform operations on registers through a CLI prompt mode similar to networking equipment interfaces
+* Store and manage register data in a file system
+
+The tool is designed to be used by organizations that need to maintain registers
+of information items, such as document libraries, terminology databases, or any
+other type of managed content that requires versioning and governance.
+
+[bibliography]
+== Normative references
+
+* [[[iso_19135-2025,ISO/DIS 19135]]]
+* [[[yaml_1_2,YAML 1.2]]], YAML Ain't Markup Language (https://yaml.org/spec/1.2/spec.html)
+
+== Terms and definitions
+
+=== register
+
+managed collection of information
+
+[.source]
+<<iso_19135-2025,clause=3.24>>
+
+=== register item
+
+unit of information in a {{register}} with an {{identifier}}
+
+[.source]
+<<iso_19135-2025,clause=3.25>>
+
+=== concept
+
+unit of knowledge created by a unique combination of characteristics
+
+[.source]
+<<iso_19135-2025,clause=3.8>>
+
+=== concept class
+
+{{concept}} that corresponds to a potentially unlimited number of objects which
+form a group by reason of shared properties
+
+[.source]
+<<iso_19135-2025,clause=3.9>>
+
+=== register item class
+
+defined abstraction of a set of {{register item,register items}} that share
+common characteristics
+
+[.source]
+<<iso_19135-2025,clause=3.26>>
+
+=== CLI prompt mode
+
+interactive command-line interface that accepts commands in a session-based manner
+
+=== CLI tool
+
+software application that operates through a command-line interface
+
+
+== Architecture
+
+=== General
+
+A Paneron register conforming to ISO 19135:2025 is composed of the following key components.
+
+* Register metadata
+* Concept classes
+* Register item classes
+* Concept instances
+* Register item instances
+* Identifiers for all components
+
+=== Register metadata
+
+The register metadata contains basic information about the register, including:
+
+* Register identifier
+* Register name
+* Register owner
+* Register manager
+* Creation date
+
+[example]
+====
+`metadata.yml`:
+
+[source,yaml]
+----
+---
+register_identifier: "urn:paneron:register:unitsml-uom-register"
+name: "UnitsML Units of Measure Register"
+owner: "UnitsML Consortium"
+manager: "UnitsML Technical Committee"
+creation_date: "2024-06-26"
+----
+====
+
+=== Concept classes
+
+The concept classes define the types of concepts that can be instantiated in the
+register. These classes provide a framework for categorizing and organizing the
+various concepts utilized within the registers.
+
+A concept class is a representation of a group of concepts that share common
+characteristics. It defines the structure of the concepts and the attributes
+that can be associated with them.
+
+.A concept class for a units of measure
+[example]
+====
+[source,lutaml]
+----
+class UnitOfMeasure {
+  definition {
+    Represents a unit of measure
+  }
+
+  attribute id, String {
+    definition "Unique identifier for the unit of measure"
+    pattern /^UOM-\d{4}$/
+  }
+
+  attribute name, String {
+    definition "Name of the unit of measure"
+  }
+}
+----
+====
+
+=== Concept instances
+
+A concept instance is an instantiation of a concept class. It represents a unique
+instance of a concept with specific values for its attributes.
+
+.A concept instance for a meter unit of measure
+[example]
+====
+[source,lutaml]
+----
+instance Meter { 
+  id = "UOM-0001"
+  name = "Meter"
+}
+----
+
+Or in YAML:
+
+[source,yaml]
+----
+---
+id: "UOM-0001"
+name: "Meter"
+----
+====
+
+=== Register item classes
+
+The register item classes define the types of register items that can be
+instantiated in the register. These classes provide a framework for categorizing
+and organizing the various register items utilized within the registers.
+
+A register item class is the underlying managed schema of a concept class.
+It defines the structure of the register items and the attributes that can be
+associated with them.
+
+.A register item class for a version of a unit of measure concept
+[example]
+====
+[source,lutaml]
+----
+class UnitOfMeasureVersion {
+  definition {
+    Represents a version of a unit of measure concept
+  }
+
+  attribute id, String {
+    definition "Unique identifier for the unit of measure version"
+    pattern /^UOM-\d{4}-v\d{1,2}\.\d{1,2}$/
+  }
+
+  attribute version, String {
+    definition "Version identifier of the unit of measure"
+    pattern /^\d+\.\d+$/
+  }
+  
+  attribute name, String {
+    definition "Name of the unit of measure"
+  }
+  
+  attribute symbol, String {
+    definition "Symbol for the unit of measure"
+  }
+  
+  attribute quantity, String {
+    definition "Physical quantity measured by the unit"
+  }
+
+  attribute publication_date, Date {
+    definition "Date of publication for this version"
+  }
+  
+  attribute format_locations, Hash {
+    definition "Map of format types to their storage locations in the register"
+  }
+  
+  attribute status, String {
+    definition "Status of this unit of measure version"
+    values { "draft", "published", "retired" }
+  }
+  
+  attribute concept_identifier, String {
+    definition "Reference to the unit of measure concept this item represents"
+  }
+}
+----
+====
+
+=== Register item instances
+
+A register item instance is an instantiation of a register item class. It represents
+a unique instance of a register item with specific values for its attributes.
+
+
+.A register item instance that represents a concept instance version
+====
+[source,lutaml]
+----
+instance MeterVersionV1 {
+  id = "UOM-0001-v1.0"
+  version = "1.0"
+  name = "Meter"
+  symbol = "m"
+  quantity = "Length"
+  publication_date = "2024-06-26"
+  status = "published"
+  concept_identifier = "UOM-0001"
+}
+----
+
+Or in YAML:
+
+[source,yaml]
+----
+---
+id: "UOM-0001-v1.0"
+version: "1.0"
+name: "Meter"
+symbol: "m"
+quantity: "Length"
+publication_date: "2024-06-26"
+status: "published"
+concept_identifier: "UOM-0001"
+----
+====
+
+=== Identifiers
+
+All components of a register, including register metadata, concept classes,
+concept instances, register item classes, and register item instances, are
+identified by unique identifiers.
+
+The identifiers are used to reference and link the components together within
+the register.
+
+[example]
+====
+* Register identifier: `urn:paneron:register:unitsml-uom-register`
+* Concept class identifier: `UOM-0001`
+* Concept instance identifier: `UOM-0001`
+* Register item class identifier: `UOM-0001-v1.0`
+* Register item instance identifier: `UOM-0001-v1.0`
+====
+
+== Requirements
+
+=== General
+
+The Paneron Registry CLI implements the register management capabilities
+defined in ISO 19135:2025. 
+
+It provides a command-line interface that allows users to create and manage
+registers through both direct commands and an interactive prompt mode.
+
+=== Architecture
+
+The CLI implements the following main components:
+
+* CLI interface layer
+* Register management layer
+* Data storage layer
+
+The register management layer handles the logical operations on registers, while
+the data storage layer manages the physical storage of register data in the file
+system.
+
+
+=== Data model
+
+==== General
+
+The data model of a register managed by this tool consists of:
+
+* Register metadata
+* Concept classes
+* Register item classes
+* Concept instances
+* Register item instances
+
+All these components are stored in plain text files using the LutaML format
+or other formats supported by LutaML Model. 
+
+==== Storage structure
+
+The file system structure for storing register data follows this pattern:
+
+[source]
+----
+{REGISTER_ROOT}/
+  ├── metadata.yml           # Register metadata
+  ├── concept-classes/       # Concept class definitions
+  │   └── *.lutaml          # LutaML model files
+  ├── concept-instances/     # Concept instances
+  │   └── *.lutaml          # LutaML instance files
+  ├── register-classes/      # Register item class definitions
+  │   └── *.lutaml          # LutaML model files
+  └── register-instances/    # Register item instances
+      └── *.lutaml          # LutaML instance files
+----
+
+
+=== Register metadata model
+
+The register metadata is defined using the following LutaML model:
+
+[source,lutaml]
+----
+class RegisterMetadata {
+  definition {
+    Metadata for a register
+  }
+
+  attribute register_identifier, String {
+    definition "Unique identifier for the register"
+  }
+  
+  attribute name, String {
+    definition "Human-readable name of the register"
+  }
+  
+  attribute owner, String {
+    definition "Organization or entity that owns the register"
+  }
+  
+  attribute manager, String {
+    definition "Entity responsible for managing the register"
+  }
+  
+  attribute creation_date, Date {
+    definition "Date when the register was created"
+  }
+  
+  attribute last_modified, Date {
+    definition "Date when the register was last modified"
+  }
+}
+----
+
+=== Document concept example
+
+Here is an example of a Document concept class and its associated register item class:
+
+[source,lutaml]
+----
+class DocumentConcept {
+  definition {
+    A document concept represents a unique intellectual work that may have multiple 
+    manifestations over time
+  }
+
+  attribute title, String {
+    definition "Title of the document"
+  }
+  
+  attribute authors, String {
+    definition "Authors of the document"
+    cardinality 1..*
+  }
+  
+  attribute abstract, String {
+    definition "Abstract or summary of the document"
+  }
+  
+  attribute keywords, String {
+    definition "Keywords associated with the document"
+    cardinality 0..*
+  }
+}
+
+class DocumentRegisterItem {
+  definition {
+    A document register item represents a specific version or manifestation of a document concept
+  }
+
+  attribute version, String {
+    definition "Version identifier of the document"
+  }
+  
+  attribute publication_date, Date {
+    definition "Date of publication for this version"
+  }
+  
+  attribute format_locations, Hash {
+    definition "Map of format types to their storage locations in the register"
+  }
+  
+  attribute status, String {
+    definition "Status of this document version"
+    values { "draft", "published", "retired" }
+  }
+  
+  attribute concept_identifier, String {
+    definition "Reference to the document concept this item represents"
+  }
+}
+----
+
+== Command-line interface
+
+=== General structure
+
+The CLI tool provides both direct command mode and interactive prompt mode.
+
+The commands used in direct command or interactive prompt mode are identical.
+
+Direct command mode:
+
+[source,sh]
+----
+$ paneron [global options] command [command options] [arguments...]
+----
+
+Interactive prompt mode:
+
+[source,sh]
+----
+$ paneron
+paneron>
+----
+
+=== Example usage
+
+[source,sh]
+----
+$ paneron
+paneron> enter register myregister
+myregister> show concept-classes -table
+╔══════════════════╦═══════════════════════════════════════╗
+║   Concept Class  ║              Description              ║
+╚══════════════════╩═══════════════════════════════════════╝
+┌──────────────────┬───────────────────────────────────────┐
+│ UnitOfMeasure    │ Represents a unit of measurement      │
+└──────────────────┴───────────────────────────────────────┘
+
+myregister> show concept-class UnitOfMeasure
+──────────────────────────────────────────────────────────
+class UnitOfMeasure {
+  definition {
+    Represents a unit of measure
+  }
+
+  attribute id, String {
+    definition "Unique identifier for the unit of measure"
+    pattern /^UOM-\d{4}$/
+  }
+
+  # ...
+}
+──────────────────────────────────────────────────────────
+
+myregister> show concepts UnitOfMeasure -table
+myregister> show register-item-classes -table 
+╔══════════════════════╦═══════════════════════════════════════════════════╗
+║ Register Item Class  ║              Description                          ║
+╚══════════════════════╩═══════════════════════════════════════════════════╝
+┌──────────────────────┬───────────────────────────────────────────────────┐
+│ UnitOfMeasureVersion │ Represents a version of a unit of measure concept │
+└──────────────────────┴───────────────────────────────────────────────────┘
+
+myregister> show register-item-class UnitOfMeasureVersion
+──────────────────────────────────────────────────────────
+class UnitOfMeasureVersion {
+  definition {
+    Represents a version of a unit of measure concept
+  }
+
+  attribute id, String {
+    definition "Unique identifier for the unit of measure version"
+    pattern /^UOM-\d{4}-v\d{1,2}\.\d{1,2}$/
+  }
+
+  # ...
+}
+──────────────────────────────────────────────────────────
+
+myregister> show register-items UnitOfMeasureVersion -table
+╔═══════════════╦═════════╦══════════╦════════╦══════════╦══════════════════╦═══════════╦════════════════════╗
+║ id            ║ version ║ name     ║ symbol ║ quantity ║ publication_date ║ status    ║ concept_identifier ║
+╚═══════════════╩═════════╩══════════╩════════╩══════════╩══════════════════╩═══════════╩════════════════════╝
+│ UOM-0001-v1.0 │ 1.0     │ Metre    │ m      │ Length   │ 2023-01-01       │ published │ UOM-1              │
+│ UOM-0002-v1.0 │ 1.0     │ Litre    │ L      │ Volume   │ 2023-01-01       │ published │ UOM-2              │
+│ UOM-0003-v1.0 │ 1.0     │ Kilogram │ kg     │ Mass     │ 2023-01-01       │ published │ UOM-3              │
+| UOM-0004-v1.0 | 1.0     | Second   | s      | Time     | 2023-01-01       | published | UOM-4              │
+| UOM-0005-v1.0 | 1.0     | Kelvin   | K      | Temperature | 2023-01-01    | published | UOM-5              │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+myregister> show register-item UnitOfMeasureVersion id="UOM-0001-v1.0"
+──────────────────────────────────────────────────────────
+instance UOM-0001-v1.0 {
+  version = "1.0"
+  name = "Metre"
+  symbol = "m"
+  quantity = "Length"
+  publication_date = "2023-01-01"
+  status = "published"
+  concept_identifier = "UOM-1"
+}
+──────────────────────────────────────────────────────────
+----
+
+=== Command reference
+
+All commands in the Paneron CLI follow this general structure.
+
+[source,sh]
+----
+$ paneron [global options] command [subcommand] [arguments] [command options]
+----
+
+.Global options
+[cols="2,4,2"]
+|===
+|Option|Description|Default
+
+| `--debug` | Enable debug output|false
+| `--config` | Path to config file|`~/.paneron/config`
+| `--format` | Output format (text, json)|text
+| `--no-color` | Disable colored output|false
+|===
+
+In interactive mode, the `enter` command is used to enter a context. There is no
+need to repeat the current context in the command.
+
+[example]
+====
+The effect of a direct command and via interactive mode is identical.
+
+[source,sh]
+----
+$ paneron register myregister show concept-classes
+[...]
+----
+
+[source,sh]
+----
+$ paneron
+paneron> enter register myregister
+register myregister> show concept-classes
+[...]
+----
+====
+
+=== Register management commands
+
+==== create register
+
+Creates a new register in the system.
+
+Syntax:
+
+[source,sh]
+----
+$ paneron create register NAME [options]
+----
+
+Options:
+[cols="2,4,2"]
+|===
+|Option|Description|Default
+| `--owner` | Register owner|Current user
+| `--manager` | Register manager|Current user
+| `--description` | Register description|""
+|===
+
+[example]
+.Creating a document management register
+====
+[source,shell]
+----
+$ paneron create register documents \
+    --owner "Tech Publications" \
+    --manager "Content Team"
+[info] Register 'documents' created successfully at ~/.paneron/registers/documents
+----
+====
+
+==== enter register
+
+Enters interactive mode for a register.
+
+Syntax:
+
+[source,sh]
+----
+$ paneron enter register NAME [options]
+----
+
+Options:
+[cols="2,4,2"]
+|===
+|Option|Description|Default
+| `--read-only` | Open in read-only mode|false
+|===
+
+[example]
+.Entering interactive mode for documents register
+====
+[source,shell]
+----
+$ paneron
+Entering interactive mode.
+Type 'help' for available commands
+paneron> enter register documents
+Entered register 'documents'
+register:documents>
+----
+====
+
+=== Concept class commands
+
+==== create concept-class
+
+Creates a new concept class definition.
+
+Syntax:
+
+[source]
+----
+paneron [register context] create concept-class NAME [options]
+----
+
+The command supports two modes:
+
+* Batch mode: Provide complete LutaML definition
+* Interactive mode: System prompts for each attribute
+
+[example]
+.Batch mode - Creating a document concept class
+====
+[source,shell]
+----
+$ paneron register document create concept-class Document
+Enter LutaML definition:
+class Document {
+  definition {
+    Represents a managed document
+  }
+  attribute title, String {
+    definition "Document title"
+  }
+  attribute authors, String {
+    cardinality 1..*
+  }
+}
+Concept class 'Document' created successfully.
+----
+====
+
+[example]
+.Interactive mode - Creating a document concept class
+====
+[source,shell]
+----
+$ paneron
+paneron> enter register document
+register document> create concept-class Document
+Enter description: Represents a managed document
+Add attribute? [y/N] y
+Attribute name: title
+Attribute type [String]: String
+Attribute description: Document title
+Is required? [y/N] y
+Add another attribute? [y/N] y
+Attribute name: authors
+Attribute type [String]: String
+Attribute description: Document authors
+Is required? [y/N] y
+Is multiple? [y/N] y
+Add another attribute? [y/N] n
+Concept class 'Document' created successfully.
+----
+====
+
+=== Register item class commands
+
+==== create item-class
+
+Creates a new register item class definition.
+
+Syntax:
+
+[source]
+----
+paneron [register context] create item-class NAME --concept-class CONCEPT_CLASS [options]
+----
+
+[example]
+.Creating a document version register item class
+====
+[source,shell]
+----
+$ paneron
+paneron> enter register document
+register document> create item-class DocumentVersion --concept-class Document
+Enter LutaML definition:
+class DocumentVersion {
+  definition {
+    Represents a version of a document
+  }
+  attribute version, String {
+    pattern /^\d+\.\d+\.\d+$/
+  }
+  attribute status, String {
+    values { "draft", "published", "retired" }
+  }
+}
+Register item class 'DocumentVersion' created successfully
+----
+====
+
+=== Instance commands
+
+==== create concept
+
+Creates a new concept instance.
+
+Syntax:
+
+[source]
+----
+paneron [register context] create concept --class CLASS_NAME [options]
+----
+
+[example]
+.Creating a document concept in batch mode
+====
+[source,shell]
+----
+$ paneron create concept --class Document
+Enter concept data in LutaML format:
+instance Document {
+  title = "ISO 19135:2025"
+  authors = ["ISO/TC 211"]
+}
+Concept created with identifier: DOC-001
+----
+====
+
+[example]
+.Creating a document concept in interactive mode
+====
+[source,shell]
+----
+$ paneron
+paneron> enter register document
+register document> create concept --class Document --interactive
+Enter title: ISO 19135:2025
+Enter authors (comma-separated): ISO/TC 211
+register document> create item --class DocumentVersion --concept DOC-001
+Enter item data in LutaML format:
+instance DocumentVersion {
+  version = "1.0.0"
+  status = "published"
+}
+Register item created with identifier: DOC-001-v1
+----
+====
+
+==== create item
+
+Creates a new register item instance.
+
+Syntax:
+
+[source]
+----
+paneron [register context] create item --class CLASS_NAME --concept CONCEPT_ID [options]
+----
+
+[example]
+.Creating a document version in batch mode
+====
+[source,shell]
+----
+$ paneron
+paneron> enter register document
+register document> create item --class DocumentVersion --concept DOC-001
+Enter item data in LutaML format:
+instance DocumentVersion {
+  version = "1.0.0"
+  status = "published"
+}
+Register item created with identifier: DOC-001-v1
+----
+====
+
+=== Register query commands
+
+==== search
+
+Searches across register items and concepts.
+
+Syntax:
+
+[source]
+----
+paneron [register context] search QUERY [options]
+----
+
+Options:
+[cols="2,4,2"]
+|===
+|Option|Description|Default
+| `--type` | Search type (concept, item, all)|all
+| `--class` | Limit to specific class|All classes
+| `--status` | Filter by status|All statuses
+| `--limit` | Maximum number of results|10
+| `--sort` | Sort order (asc, desc)|asc
+|===
+
+[example]
+.Searching for climate-related projects
+====
+[source,shell]
+----
+research> search "climate" --type concept --class Project --limit 5 --sort asc
+Results:
+PRJ-0001: Climate Data Analysis (active)
+PRJ-0003: Climate Modeling Initiative (planned)
+----
+====
+
+==== export
+
+Exports register data in various formats.
+
+Syntax:
+
+[source]
+----
+paneron [register context] export [options]
+----
+
+Options:
+[cols="2,4,2"]
+|===
+|Option|Description|Default
+| `--format` | Export format (json, xml, csv)|json
+| `--output` | Output directory|./export
+| `--classes` | Classes to export|All classes
+| `--limit` | Maximum number of results|10
+| `--sort` | Sort order (asc, desc)|asc
+|===
+
+[example]
+.Exporting research project data
+====
+[source,shell]
+----
+research> export --format json --classes Project,Researcher --limit 5 --sort asc --output ./export
+Exporting data...
+- Projects exported to ./export/projects.json
+- Researchers exported to ./export/researchers.json
+- Exported items count: 10 (5 projects, 5 researchers)
+- Export completed successfully
+----
+====
+
+== Use case examples
+
+=== Simple register evolution
+
+This example shows a document evolving through multiple versions.
+
+[example]
+.Document evolution through versions
+====
+[source,shell]
+----
+# Create initial version
+documents> create item --class DocumentVersion --concept DOC-001
+Enter item data:
+instance DocumentVersion {
+  version = "1.0.0"
+  status = "published"
+  content = "Initial release"
+}
+
+# Update to version 1.1.0
+documents> create item --class DocumentVersion --concept DOC-001
+Enter item data:
+instance DocumentVersion {
+  version = "1.1.0"
+  status = "published"
+  content = "Bug fixes"
+}
+
+# Update to version 2.0.0
+documents> create item --class DocumentVersion --concept DOC-001
+Enter item data:
+instance DocumentVersion {
+  version = "2.0.0"
+  status = "published"
+  content = "Major revision"
+}
+
+# List all versions
+documents> show items --concept DOC-001
+DOC-001-v1: 1.0.0 (published)
+DOC-001-v2: 1.1.0 (published)
+DOC-001-v3: 2.0.0 (published)
+----
+====
+
+=== Register with evolved schema
+
+This example shows how to handle schema evolution while maintaining the same concept.
+
+[example]
+.Schema evolution for document versions
+====
+[source,shell]
+----
+# Initial schema
+documents> create item-class DocumentVersion-v1
+class DocumentVersion {
+  attribute version, String
+  attribute content, String
+  concept_class Document
+}
+
+# Create item with initial schema
+documents> create item --class DocumentVersion-v1 --concept DOC-001
+instance DocumentVersion {
+  version = "1.0.0"
+  content = "Initial content"
+}
+
+# Evolve schema to add metadata
+documents> create item-class DocumentVersion-v2
+class DocumentVersion {
+  attribute version, String
+  attribute content, String
+  attribute author, String
+  attribute last_modified, Date
+}
+
+# Create new version with new schema
+documents> create item --class DocumentVersion-v2 --concept DOC-001
+instance DocumentVersion {
+  version = "2.0.0"
+  content = "Updated content"
+  author = "John Doe"
+  last_modified = "2024-06-27"
+}
+
+# Both versions reference same concept but use different schemas
+documents> show items --concept DOC-001
+DOC-001-v1: 1.0.0 (DocumentVersion-v1)
+DOC-001-v2: 2.0.0 (DocumentVersion-v2)
+----
+====
+
+=== Register with evolved concept
+
+This example demonstrates both concept and schema evolution.
+
+[example]
+.Concept and schema evolution
+====
+[source,shell]
+----
+# Initial concept
+documents> create concept-class Document-v1
+class Document {
+  attribute title, String
+  attribute content, String
+}
+
+# Create concept instance
+documents> create concept --class Document-v1
+instance Document {
+  title = "My Document"
+  content = "Initial content"
+}
+
+# Evolved concept with more metadata
+documents> create concept-class Document-v2
+class Document {
+  attribute title, String
+  attribute content, String
+  attribute authors, String[]
+  attribute keywords, String[]
+}
+
+# Create new concept version
+documents> create concept --class Document-v2
+instance Document {
+  title = "My Document"
+  content = "Updated content"
+  authors = ["John Doe", "Jane Smith"]
+  keywords = ["technical", "guide"]
+}
+
+# Show concept evolution
+documents> show concepts --id DOC-001
+DOC-001 v1: Document-v1 (2024-06-26)
+DOC-001 v2: Document-v2 (2024-06-27)
+----
+====
+
+
+=== Concept version example
+
+This example shows how a document concept can evolve while maintaining version history:
+
+[source,lutaml]
+----
+// Initial document concept
+class DocumentV1 {
+  definition {
+    Initial document concept with basic metadata
+  }
+
+  attribute identifier, String {
+    definition "Unique identifier for the document"
+    pattern /^DOC-\d{4}$/
+  }
+
+  attribute title, String {
+    definition "Title of the document"
+  }
+
+  attribute authors, String[] {
+    definition "Authors of the document"
+  }
+}
+
+// Enhanced document concept
+class DocumentV2 {
+  definition {
+    Enhanced document concept with additional metadata
+  }
+
+  attribute identifier, String {
+    definition "Unique identifier for the document"
+    pattern /^DOC-\d{4}$/
+  }
+
+  attribute title, String {
+    definition "Title of the document"
+  }
+
+  attribute authors, String[] {
+    definition "Authors of the document"
+  }
+
+  attribute abstract, String {
+    definition "Document abstract"
+  }
+
+  attribute keywords, String[] {
+    definition "Keywords describing the document"
+  }
+
+  attribute language, String {
+    definition "Document language code"
+    pattern /^[a-z]{2}(-[A-Z]{2})?$/
+  }
+}
+
+// Concept instances showing evolution
+instances Documents {
+  // Initial version of the document concept
+  instance DocumentV1 {
+    identifier = "DOC-0001"
+    title = "Geographic Information Systems: An Introduction"
+    authors = ["John Smith"]
+  }
+
+  // Enhanced version of the same document concept
+  instance DocumentV2 {
+    identifier = "DOC-0001"  // Same identifier maintains concept identity
+    title = "Geographic Information Systems: An Introduction"
+    authors = ["John Smith", "Jane Doe"]  // Additional author
+    abstract = "A comprehensive introduction to GIS concepts and applications"
+    keywords = ["GIS", "spatial analysis", "mapping"]
+    language = "en-US"
+  }
+}
+
+// Register items tracking the concept versions
+instances DocumentVersions {
+  instance DocumentVersion {
+    document_ref = ref:(Documents.DOC-0001)  // References first concept version
+    version_number = "1.0.0"
+    status = "published"
+    publication_date = "2024-01-15"
+    formats = {
+      "pdf": "documents/pdf/gis-intro-1.0.0.pdf"
+    }
+    changelog = "Initial release"
+  }
+
+  instance DocumentVersion {
+    document_ref = ref:(Documents.DOC-0001)  // References enhanced concept version
+    version_number = "2.0.0"
+    status = "published"
+    publication_date = "2024-06-26"
+    formats = {
+      "pdf": "documents/pdf/gis-intro-2.0.0.pdf",
+      "html": "documents/html/gis-intro/index.html"
+    }
+    changelog = "Major update with additional content and co-author"
+  }
+}
+----
+
+This example demonstrates:
+
+1. Evolution of a concept schema (DocumentV1 to DocumentV2)
+2. Maintaining concept identity through the `identifier` field
+3. Register items referencing different versions of the same concept
+4. Proper versioning of both concept and register items
+5. Clear changelog tracking
+
+=== Version relationship example
+
+Here's how to model relationships between versions:
+
+[source,lutaml]
+----
+class VersionRelationship {
+  definition {
+    Represents relationships between document versions
+  }
+
+  attribute source_version, String {
+    definition "Reference to source version"
+  }
+
+  attribute target_version, String {
+    definition "Reference to target version"
+  }
+
+  attribute relationship_type, String {
+    definition "Type of relationship between versions"
+    values {
+      "supersedes",
+      "revises",
+      "enhances",
+      "deprecates"
+    }
+  }
+
+  attribute justification, String {
+    definition "Explanation of the relationship"
+  }
+}
+
+instances VersionRelationships {
+  instance VersionRelationship {
+    source_version = ref:(DocumentVersions.2.0.0)
+    target_version = ref:(DocumentVersions.1.0.0)
+    relationship_type = "supersedes"
+    justification = "Major revision with enhanced metadata and content"
+  }
+}
+----
+
+// New examples demonstrating schema migration and validation
+
+// === Schema migration example
+
+// The following example shows how to handle schema migration with data validation:
+
+// [source,lutaml]
+// ----
+// class SchemaVersion {
+//   definition {
+//     Tracks schema versions for concepts and register items
+//   }
+
+//   attribute schema_id, String {
+//     pattern /^SCH-\d{4}$/
+//   }
+  
+//   attribute concept_class, String
+//   attribute version, String {
+//     pattern /^\d+\.\d+\.\d+$/
+//   }
+  
+//   attribute valid_from, Date
+//   attribute valid_until, Date
+  
+//   attribute migration_rules, Hash {
+//     definition "Rules for migrating from previous version"
+//   }
+// }
+
+// class ValidationRule {
+//   definition {
+//     Defines validation rules for schema attributes
+//   }
+
+//   attribute attribute_name, String
+//   attribute rule_type, String {
+//     values {
+//       "required",
+//       "pattern",
+//       "enum",
+//       "reference",
+//       "custom"
+//     }
+//   }
+  
+//   attribute rule_definition, String
+//   attribute error_message, String
+// }
+
+// // Example of schema version tracking
+// instances SchemaVersions {
+//   instance SchemaVersion {
+//     schema_id = "SCH-0001"
+//     concept_class = "Document"
+//     version = "1.0.0"
+//     valid_from = "2024-01-01"
+//     valid_until = "2024-06-25"
+//     migration_rules = {
+//       "migrate_to_v2": {
+//         "add_fields": ["abstract", "keywords", "language"],
+//         "transform_rules": {
+//           "authors": "convert_to_array",
+//           "language": "default_to_en_US"
+//         }
+//       }
+//     }
+//   }
+// }
+
+// // Example of validation rules
+// instances ValidationRules {
+//   instance ValidationRule {
+//     attribute_name = "language"
+//     rule_type = "pattern"
+//     rule_definition = "/^[a-z]{2}(-[A-Z]{2})?$/"
+//     error_message = "Language code must be in format 'xx' or 'xx-XX'"
+//   }
+  
+//   instance ValidationRule {
+//     attribute_name = "authors"
+//     rule_type = "required"
+//     rule_definition = "true"
+//     error_message = "Document must have at least one author"
+//   }
+// }
+
+// // Example of migration process
+// class MigrationLog {
+//   definition {
+//     Tracks the migration of concepts between schema versions
+//   }
+
+//   attribute migration_id, String {
+//     pattern /^MIG-\d{6}$/
+//   }
+  
+//   attribute source_schema, String
+//   attribute target_schema, String
+//   attribute concept_id, String
+  
+//   attribute status, String {
+//     values {
+//       "pending",
+//       "in_progress",
+//       "completed",
+//       "failed"
+//     }
+//   }
+  
+//   attribute changes_applied, Hash
+//   attribute validation_errors, String[]
+//   attribute completion_date, Date
+// }
+
+// instances MigrationLogs {
+//   instance MigrationLog {
+//     migration_id = "MIG-000001"
+//     source_schema = ref:(SchemaVersions.SCH-0001)
+//     target_schema = ref:(SchemaVersions.SCH-0002)
+//     concept_id = "DOC-0001"
+//     status = "completed"
+//     changes_applied = {
+//       "added_fields": ["abstract", "keywords", "language"],
+//       "transformed": ["authors"]
+//     }
+//     validation_errors = []
+//     completion_date = "2024-06-26"
+//   }
+// }
+// ----
+
+// === Migration command examples
+
+// Here's how the CLI handles schema migrations:
+
+// [source]
+// ----
+// # View available schema versions
+// documents> show schemas
+// SCH-0001: Document v1.0.0 (2024-01-01 - 2024-06-25)
+// SCH-0002: Document v2.0.0 (2024-06-26 - present)
+
+// # Check migration compatibility
+// documents> check-migration DOC-0001 --target-schema SCH-0002
+// Checking migration compatibility...
+// ✓ All required fields can be mapped
+// ✓ Data transformations available
+// ✓ No conflicts detected
+// Migration is possible
+
+// # Perform migration with validation
+// documents> migrate-concept DOC-0001 --target-schema SCH-0002 --validate
+// Starting migration...
+// - Adding new fields...
+// - Transforming authors field...
+// - Validating new schema...
+// ✓ Migration completed successfully
+// Migration ID: MIG-000001
+
+// # View migration history
+// documents> show-migration MIG-000001
+// Migration Details:
+//   Source: Document v1.0.0
+//   Target: Document v2.0.0
+//   Status: Completed
+//   Changes:
+//     - Added: abstract, keywords, language
+//     - Transformed: authors
+//   Completed: 2024-06-26
+// ----
+
+// === Validation examples
+
+// [source]
+// ----
+// # Validate concept against schema
+// documents> validate-concept DOC-0001
+// Validating against Document v2.0.0...
+// ✓ Required fields present
+// ✓ Field types correct
+// ✓ Pattern validations passed
+// Concept is valid
+
+// # Check cross-references
+// documents> validate-references DOC-0001
+// Checking references...
+// ✓ All document versions accessible
+// ✓ Related concepts valid
+// References are valid
+// ----
+
+
+[appendix]
+== Example register configurations
+
+=== Document register example
+
+This example shows a complete register configuration for managing document versions:
+
+[source,lutaml]
+----
+// Register metadata
+class DocumentRegisterMetadata {
+  attribute register_identifier, String = "doc-register"
+  attribute name, String = "Document Management Register"
+  attribute owner, String = "Technical Publications"
+  attribute manager, String = "Content Team"
+  attribute creation_date, Date = "2024-06-26"
+  attribute last_modified, Date = "2024-06-26"
+}
+
+// Concept class
+class Document {
+  definition {
+    Represents a managed document with version control
+  }
+
+  attribute identifier, String {
+    definition "Unique identifier for the document"
+    pattern /^DOC-\d{4}$/
+  }
+
+  attribute title, String {
+    definition "Title of the document"
+  }
+
+  attribute authors, String {
+    definition "Authors of the document"
+    cardinality 1..*
+  }
+
+  attribute subject_area, String {
+    definition "Subject area of the document"
+    values { "Technical", "Administrative", "Policy", "Standard" }
+  }
+}
+
+// Register item class
+class DocumentVersion {
+  definition {
+    Represents a specific version of a document
+  }
+
+  attribute document_ref, String {
+    definition "Reference to the document concept"
+  }
+
+  attribute version_number, String {
+    definition "Version number in semantic versioning format"
+    pattern /^\d+\.\d+\.\d+$/
+  }
+
+  attribute status, String {
+    definition "Publication status"
+    values { "draft", "review", "approved", "published", "deprecated" }
+  }
+
+  attribute publication_date, Date {
+    definition "Date of publication"
+  }
+
+  attribute formats, Hash {
+    definition "Available formats and their locations"
+  }
+
+  attribute changelog, String {
+    definition "Changes in this version"
+  }
+}
+
+// Example instances
+instances Documents {
+  instance Document {
+    identifier = "DOC-0001"
+    title = "ISO 19135:2025 Implementation Guide"
+    authors = ["Standards Committee"]
+    subject_area = "Standard"
+  }
+}
+
+instances DocumentVersions {
+  instance DocumentVersion {
+    document_ref = ref:(Documents.DOC-0001)
+    version_number = "1.0.0"
+    status = "published"
+    publication_date = "2024-06-26"
+    formats = {
+      "pdf": "documents/pdf/iso-19135-guide.pdf",
+      "html": "documents/html/iso-19135-guide/index.html"
+    }
+    changelog = "Initial release"
+  }
+}
+----
+
+// New example register configurations
+
+=== Museum collection register example
+
+This example shows a complete register configuration for managing museum collections:
+
+[source,lutaml]
+----
+// Register metadata schema
+class MuseumRegisterMetadata {
+  definition {
+    Metadata for a museum collection register
+  }
+
+  attribute register_identifier, String {
+    definition "Unique identifier for the register"
+    pattern /^MUS-[A-Z]{3}$/
+  }
+  
+  attribute name, String {
+    definition "Human-readable name of the register"
+  }
+  
+  attribute institution, String {
+    definition "Museum or institution managing the register"
+  }
+  
+  attribute department, String {
+    definition "Department responsible for the collection"
+  }
+  
+  attribute creation_date, Date {
+    definition "Date when the register was created"
+  }
+  
+  attribute last_modified, Date {
+    definition "Date when the register was last modified"
+  }
+}
+
+// Value validation rules
+class ValueAssessment {
+  definition {
+    Assessment of artifact monetary and cultural value
+  }
+  
+  attribute artifact_ref, String {
+    definition "Reference to the artifact"
+  }
+  
+  attribute monetary_value, Float {
+    definition "Assessed monetary value in base currency"
+  }
+  
+  attribute cultural_significance, String {
+    definition "Level of cultural significance"
+    values { "exceptional", "high", "moderate", "low" }
+  }
+  
+  attribute assessment_date, Date {
+    definition "Date of value assessment"
+  }
+  
+  attribute assessor, String {
+    definition "Person conducting the assessment"
+  }
+}
+----
+
+// Instance data in separate block
+[source,lutaml]
+----
+instances MuseumRegisters {
+  instance MuseumRegisterMetadata {
+    register_identifier = "MUS-CER"
+    name = "Ceramics Collection Register"
+    institution = "National Museum of Art"
+    department = "Asian Art"
+    creation_date = "2024-01-01"
+    last_modified = "2024-06-26"
+  }
+}
+
+instances ValueAssessments {
+  instance ValueAssessment {
+    artifact_ref = ref:(Artifacts.ART-000123)
+    monetary_value = 250000.00
+    cultural_significance = "high"
+    assessment_date = "2024-01-15"
+    assessor = "Dr. Sarah Johnson"
+  }
+}
+----
+
+
+[bibliography]
+== References
+
+* [[[iso19135,ISO 19135:2025]]] Geographic information — Procedures for item registration
+* [[[lutaml,LutaML]]] LutaML Specification
+
