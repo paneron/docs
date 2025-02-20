@@ -43,8 +43,8 @@ other type of managed content that requires versioning and governance.
 [bibliography]
 == Normative references
 
-// * [[[iso_19135-2025,ISO/DIS 19135]]]
-// * [[[yaml_1_2,YAML 1.2]]], YAML Ain't Markup Language (https://yaml.org/spec/1.2/spec.html)
+* [[[iso_19135-2025,ISO/DIS 19135]]]
+* [[[yaml_1_2,YAML 1.2]]], YAML Ain't Markup Language (https://yaml.org/spec/1.2/spec.html)
 
 == Terms and definitions
 
@@ -52,38 +52,38 @@ other type of managed content that requires versioning and governance.
 
 managed collection of information
 
-// [.source]
-// <<iso_19135-2025,clause=3.24>>
+[.source]
+<<iso_19135-2025,clause=3.24>>
 
 === register item
 
 unit of information in a {{register}} with an {{identifier}}
 
-// [.source]
-// <<iso_19135-2025,clause=3.25>>
+[.source]
+<<iso_19135-2025,clause=3.25>>
 
 === concept
 
 unit of knowledge created by a unique combination of characteristics
 
-// [.source]
-// <<iso_19135-2025,clause=3.8>>
+[.source]
+<<iso_19135-2025,clause=3.8>>
 
 === concept class
 
 {{concept}} that corresponds to a potentially unlimited number of objects which
 form a group by reason of shared properties
 
-// [.source]
-// <<iso_19135-2025,clause=3.9>>
+[.source]
+<<iso_19135-2025,clause=3.9>>
 
 === register item class
 
 defined abstraction of a set of {{register item,register items}} that share
 common characteristics
 
-// [.source]
-// <<iso_19135-2025,clause=3.26>>
+[.source]
+<<iso_19135-2025,clause=3.26>>
 
 === CLI prompt mode
 
